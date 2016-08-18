@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   actionlib_msgs
   message_generation
   std_msgs
+  pnp_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -71,7 +72,8 @@ add_action_files(
 generate_messages(
   DEPENDENCIES
   std_msgs
-  actionlib_msgs 
+  actionlib_msgs
+  pnp_msgs 
 )
 
 ################################################
