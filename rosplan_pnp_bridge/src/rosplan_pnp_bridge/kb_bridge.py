@@ -6,7 +6,6 @@ Created on Thu Aug 18 16:19:06 2016
 """
 
 import rospy
-import utils as ut
 from pnp_knowledgebase.pnp_knowledgebase_abstractclass import PNPKnowledgebaseAbstractclass
 from rosplan_knowledge_msgs.srv import KnowledgeUpdateService, KnowledgeUpdateServiceRequest
 from rosplan_knowledge_msgs.srv import KnowledgeQueryService, KnowledgeQueryServiceRequest
@@ -59,7 +58,7 @@ class KnowledgeBaseBridge(PNPKnowledgebaseAbstractclass):
         """
         cond = predicate.split("__")
 
-        while not rospy.is_shutdown():
+        while not rospy.is_shutdown() and self.query_knowledgbase(predicate) != truth_value:
             try:
                 s = rospy.ServiceProxy(
                     "/kcl_rosplan/update_knowledge_base",
@@ -70,15 +69,17 @@ class KnowledgeBaseBridge(PNPKnowledgebaseAbstractclass):
                 rospy.logwarn("Could not communicate with '%s' service. Retrying in 1 second." % "/kcl_rosplan/query_knowledge_base")
                 rospy.sleep(1.)
             else:
+                rospy.loginfo("Updating %s %s" % (str(predicate), str(truth_value)))
                 req = KnowledgeUpdateServiceRequest()
+                req.update_type = req.ADD_KNOWLEDGE if truth_value else req.REMOVE_KNOWLEDGE
                 req.knowledge = KnowledgeItem(
                     knowledge_type=KnowledgeItem.FACT,
                     attribute_name=cond[0],
                     values=[KeyValue(value=x) for x in cond[1:]]
                 )
                 try:
-                    r = s(req)
+                    s(req)
                 except rospy.ROSInterruptException:
                     return
                 else:
-                    return 1 if r.all_true else 0
+                    return
