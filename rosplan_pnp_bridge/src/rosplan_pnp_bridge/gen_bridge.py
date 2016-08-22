@@ -6,13 +6,34 @@ Created on Thu Aug 18 15:25:06 2016
 """
 import rospy
 from rosplan_knowledge_msgs.srv import GetDomainOperatorDetailsService
-import utils as ut
+import pnpgen_ros.utils as ut
 from pnpgen_ros.pnpgen_bridge_abstractclass import PNPGenBridgeAbstractclass
+
+ACTION_ID = "ROSplanAction"
 
 
 class GenBridge(PNPGenBridgeAbstractclass):
     def __init__(self):
         super(GenBridge, self).__init__()
+
+    def new_rosplan_action(self, name, duration, parameters, id):
+        return [self.new_action_list(
+                    actions=[self.new_action(
+                        name=ACTION_ID,
+                        parameters=["start", str(id)]
+                    )]
+                ), self.new_action_list(
+                    actions=[self.new_action(
+                        name=str(name),
+                        duration=int(duration),
+                        parameters=parameters.values()
+                    )]
+                ), self.new_action_list(
+                    actions=[self.new_action(
+                        name=ACTION_ID,
+                        parameters=["end", str(id)]
+                    )]
+                )]
 
     def parse_plan_msg(self, msg):
         plan = self.new_plan()
@@ -20,13 +41,12 @@ class GenBridge(PNPGenBridgeAbstractclass):
         for action in msg.plan:
             parameters = {str(p.key):str(p.value) for p in action.parameters}
             name = str(action.name)
-            plan.actions.append(
-                self.new_action_list(
-                    actions=[self.new_action(
-                        name=name,
-                        duration=int(action.duration),
-                        parameters=parameters.values()
-                    )]
+            plan.actions.extend(
+                self.new_rosplan_action(
+                    name=name,
+                    duration=action.duration,
+                    parameters=parameters,
+                    id=0
                 )
             )
 
@@ -52,7 +72,7 @@ class GenBridge(PNPGenBridgeAbstractclass):
                 self.new_execution_rule(
                     timing=PNPGenBridgeAbstractclass.BEFORE,
                     action_name=name,
-                    condition=ut.create_condition("and", [ut.create_condition("not",x) for x in cond]),
+                    condition=ut.create_condition("not", ut.create_condition("and",cond)),
                     recovery=self.new_action_list(
                         actions=self.fail_plan()
                     )
