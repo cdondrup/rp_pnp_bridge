@@ -8,8 +8,7 @@ import rospy
 from rosplan_knowledge_msgs.srv import GetDomainOperatorDetailsService
 import pnpgen_ros.utils as ut
 from pnpgen_ros.pnpgen_bridge_abstractclass import PNPGenBridgeAbstractclass
-
-ACTION_ID = "ROSplanAction"
+import rosplan_pnp_bridge.rosplan_feedback_server as kb
 
 
 class GenBridge(PNPGenBridgeAbstractclass):
@@ -19,8 +18,8 @@ class GenBridge(PNPGenBridgeAbstractclass):
     def new_rosplan_action(self, name, duration, parameters, id):
         return [self.new_action_list(
                     actions=[self.new_action(
-                        name=ACTION_ID,
-                        parameters=["start", str(id)]
+                        name=kb.ACTION_ID,
+                        parameters=[kb.START, str(id)]
                     )]
                 ), self.new_action_list(
                     actions=[self.new_action(
@@ -30,8 +29,8 @@ class GenBridge(PNPGenBridgeAbstractclass):
                     )]
                 ), self.new_action_list(
                     actions=[self.new_action(
-                        name=ACTION_ID,
-                        parameters=["end", str(id)]
+                        name=kb.ACTION_ID,
+                        parameters=[kb.END, str(id)]
                     )]
                 )]
 
@@ -46,7 +45,7 @@ class GenBridge(PNPGenBridgeAbstractclass):
                     name=name,
                     duration=action.duration,
                     parameters=parameters,
-                    id=0
+                    id=action.action_id
                 )
             )
 

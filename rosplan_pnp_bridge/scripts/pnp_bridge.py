@@ -24,6 +24,7 @@ class ROSPlanBridge(object):
         rospy.loginfo("Done.")
 
     def callback(self, msg):
+        rospy.loginfo("Received new plan")
         self.gen.generate_and_send_pnml(msg)
         rospy.loginfo("Sending pnml")
 
