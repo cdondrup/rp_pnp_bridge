@@ -6,6 +6,9 @@ Created on Mon Aug 22 16:06:12 2016
 """
 
 import rospy
+from actionlib import SimpleActionClient
+from rosplan_dispatch_msgs.msg import PlanAction, PlanGoal
+from pnp_planning_system.pnp_planning_abstractclass import PNPPlanningAbstractclass
 from rosplan_pnp_bridge.msg import ROSPlanAction
 from pnp_plugin_server.pnp_simple_plugin_server import PNPSimplePluginServer
 from rosplan_dispatch_msgs.msg import ActionFeedback
@@ -16,15 +19,18 @@ FAIL = "fail"
 ACTION_ID = "ROSplanAction"
 
 
-class ROSPlanFeedbackServer(object):
+class ROSPlanFeedbackServer(PNPPlanningAbstractclass):
     def __init__(self):
         rospy.loginfo("Starting '%s'." % ACTION_ID)
+        super(ROSPlanFeedbackServer, self).__init__()
         self._sps = PNPSimplePluginServer(
             ACTION_ID,
             ROSPlanAction,
             self.execute_cb,
             auto_start=False
         )
+        self.client = SimpleActionClient("/kcl_rosplan/start_planning", PlanAction)
+        self.client.wait_for_server()
         self.pub = rospy.Publisher(
             "/kcl_rosplan/action_feedback",
             ActionFeedback,
@@ -57,3 +63,10 @@ class ROSPlanFeedbackServer(object):
 
     def set_enabled(self, id):
         self.__publish(self.__new_feedback_msg(id, "action enabled"))
+
+    def goal_state_reached(self):
+        print "#### GOAL"
+
+    def fail_state_reached(self):
+        print "#### FAIL"
+        self.client.send_goal(PlanGoal())
