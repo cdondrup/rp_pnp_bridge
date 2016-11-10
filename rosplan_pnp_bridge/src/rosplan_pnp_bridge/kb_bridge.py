@@ -7,7 +7,7 @@ Created on Thu Aug 18 16:19:06 2016
 
 import rospy
 from pnp_knowledgebase.pnp_knowledgebase_abstractclass import PNPKnowledgebaseAbstractclass
-from rosplan_knowledge_msgs.srv import KnowledgeUpdateService, KnowledgeUpdateServiceRequest
+from rosplan_knowledge_msgs.srv import KnowledgeUpdateServiceArray, KnowledgeUpdateServiceArrayRequest
 from rosplan_knowledge_msgs.srv import KnowledgeQueryService, KnowledgeQueryServiceRequest
 from rosplan_knowledge_msgs.msg import KnowledgeItem
 from rosplan_knowledge_msgs.srv  import GetDomainPredicateDetailsService
@@ -83,25 +83,28 @@ class KnowledgeBaseBridge(PNPKnowledgebaseAbstractclass):
         :param predicate: The condition as a string taken from the PNP.
         :param truth_value: (int) -1 (unknown), 0 (false), 1 (true)
         """
-        cond = predicate.split("__")
-        srv_name = "/kcl_rosplan/update_knowledge_base"
-        rospy.loginfo("Updating %s %s" % (str(predicate), str(truth_value)))
-        req = KnowledgeUpdateServiceRequest()
+        srv_name = "/kcl_rosplan/update_knowledge_base_array"
+        req = KnowledgeUpdateServiceArrayRequest()
         req.update_type = req.ADD_KNOWLEDGE if truth_value else req.REMOVE_KNOWLEDGE
-        tp = self._get_predicate_details(cond[0]).predicate.typed_parameters
-        if len(tp) != len(cond[1:]):
-            rospy.logerr("Fact '%s' should have %s parameters but has only %s as parsed from: '%s'" % (cond[0], len(tp), len(cond[1:])))
-            return
-        req.knowledge = KnowledgeItem(
-            knowledge_type=KnowledgeItem.FACT,
-            attribute_name=cond[0],
-            values=[KeyValue(key=str(k.key), value=str(v)) for k,v in zip(tp, cond[1:])]
-        )
+        predicate = [predicate] if not isinstance(predicate,list) else predicate
+        for p in predicate:
+            cond = p.split("__")
+            rospy.loginfo("Updating %s %s" % (str(p), str(truth_value)))
+            tp = self._get_predicate_details(cond[0]).predicate.typed_parameters
+            if len(tp) != len(cond[1:]):
+                rospy.logerr("Fact '%s' should have %s parameters but has only %s as parsed from: '%s'" % (cond[0], len(tp), len(cond[1:])))
+                return
+            req.knowledge.append(KnowledgeItem(
+                knowledge_type=KnowledgeItem.FACT,
+                attribute_name=cond[0],
+                values=[KeyValue(key=str(k.key), value=str(v)) for k,v in zip(tp, cond[1:])]
+            ))
+
         while not rospy.is_shutdown():
             try:
                 self.__call_service(
                     srv_name,
-                    KnowledgeUpdateService,
+                    KnowledgeUpdateServiceArray,
                     req
                 )
             except rospy.ROSInterruptException:
