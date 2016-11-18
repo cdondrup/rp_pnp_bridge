@@ -39,7 +39,7 @@ class GenBridge(PNPGenBridgeAbstractclass):
 
         for action in msg.plan:
             parameters = {str(p.key):str(p.value) for p in action.parameters}
-            name = str(action.name)
+            name = str(action.name)+"@"+str(action.action_id)
             plan.actions.extend(
                 self.new_rosplan_action(
                     name=name,
@@ -49,7 +49,7 @@ class GenBridge(PNPGenBridgeAbstractclass):
                 )
             )
 
-            op = self.get_conditions_and_effects(name)
+            op = self.get_conditions_and_effects(str(action.name))
             add = ut.create_predicate(
                 parameters,
                 op.at_start_add_effects,
@@ -65,18 +65,19 @@ class GenBridge(PNPGenBridgeAbstractclass):
                 op.at_start_simple_condition,
                 op.at_end_simple_condition
             )
-
+            
             # Fail plan if conditions are false
-            plan.execution_rules.pnp_execution_rule_array.append(
-                self.new_execution_rule(
-                    timing=PNPGenBridgeAbstractclass.BEFORE,
-                    action_name=name,
-                    condition=ut.create_condition("not", ut.create_condition("and",cond)),
-                    recovery=self.new_action_list(
-                        actions=self.fail_plan()
+            if cond:
+                plan.execution_rules.pnp_execution_rule_array.append(
+                    self.new_execution_rule(
+                        timing=PNPGenBridgeAbstractclass.BEFORE,
+                        action_name=name,
+                        condition=ut.create_condition("not", ut.create_condition("and",cond)),
+                        recovery=self.new_action_list(
+                            actions=self.fail_plan()
+                        )
                     )
                 )
-            )
 
             # Skip action if all the effects have happened already
             plan.execution_rules.pnp_execution_rule_array.append(
