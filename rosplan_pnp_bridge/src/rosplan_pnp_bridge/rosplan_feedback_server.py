@@ -12,6 +12,7 @@ from pnp_planning_system.pnp_planning_abstractclass import PNPPlanningAbstractcl
 from rosplan_pnp_bridge.msg import ROSPlanAction
 from pnp_plugin_server.pnp_simple_plugin_server import PNPSimplePluginServer
 from rosplan_dispatch_msgs.msg import ActionFeedback
+from std_msgs.msg import String
 
 END = "end"
 START = "start"
@@ -34,6 +35,11 @@ class ROSPlanFeedbackServer(PNPPlanningAbstractclass):
         self.pub = rospy.Publisher(
             "/kcl_rosplan/action_feedback",
             ActionFeedback,
+            queue_size=1
+        )
+        self.commands_pub = rospy.Publisher(
+            "/kcl_rosplan/planning_commands",
+            String,
             queue_size=1
         )
         self.f = {
@@ -69,4 +75,5 @@ class ROSPlanFeedbackServer(PNPPlanningAbstractclass):
 
     def fail_state_reached(self):
         print "#### FAIL"
+        self.commands_pub.publish("cancel")
         self.client.send_goal(PlanGoal())
