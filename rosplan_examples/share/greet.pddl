@@ -25,6 +25,8 @@
         (hatch_open)
         (charging)
         (battery ?b - battery_level)
+        (tracking ?h - id)
+        (no_tracking)
 )
 
 (:durative-action find_interactant
@@ -38,11 +40,33 @@
                 (at end (not (free_interactant_id ?i))))
 )
 
+(:durative-action start_tracking_person
+        :parameters (?h - id ?i - interactant_id)
+        :duration ( = ?duration 0)
+        :condition (and
+                (at start (found_interactant ?i ?h))
+                (at start (no_tracking)))
+        :effect (and
+                (at end (tracking ?h))
+                (at end (not (no_tracking))))
+)
+
+(:durative-action stop_tracking_person
+        :parameters (?h - id ?i - interactant_id)
+        :duration ( = ?duration 0)
+        :condition (and
+                (at start (tracking ?h)))
+        :effect (and
+                (at end (not (tracking ?h)))
+                (at end (no_tracking)))
+)
+
 (:durative-action engage_human
         :parameters (?i - interactant_id ?h - id ?t - text)
         :duration ( = ?duration 0)
         :condition (and
                 (at start (found_interactant ?i ?h))
+                (at start (tracking ?h))
                 (at start (said ?h ?t)))
         :effect (and
                 (at end (engaged ?i ?t)))
@@ -52,6 +76,7 @@
         :parameters (?i - interactant_id ?h - id ?t - text)
         :duration ( = ?duration 0)
         :condition (and
+                (at start (no_tracking))
                 (at start (found_interactant ?i ?h)))
         :effect (and
                 (at end (not (found_interactant ?i ?h)))
@@ -71,6 +96,7 @@
         :parameters (?h - id ?t - distance ?f - distance)
 	:duration ( = ?duration 0)
         :condition (and
+                (at start (no_tracking))
                 (at start (human_exists ?h))
                 (at start (robot_distance ?h ?f)))
         :effect (and
@@ -83,6 +109,7 @@
         :duration ( = ?duration 5)
         :condition (and
                 (at start (human_exists ?h))
+                (at start (tracking ?h))
                 (over all (robot_distance ?h ?d))
                 (at start (say_distance ?d))) 
 	:effect (and
