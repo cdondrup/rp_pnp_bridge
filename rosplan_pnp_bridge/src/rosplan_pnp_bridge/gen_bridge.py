@@ -9,6 +9,7 @@ from rosplan_knowledge_msgs.srv import GetDomainOperatorDetailsService
 import pnpgen_ros.utils as ut
 from pnpgen_ros.pnpgen_bridge_abstractclass import PNPGenBridgeAbstractclass
 import rosplan_pnp_bridge.rosplan_feedback_server as kb
+from collections import OrderedDict
 
 
 class GenBridge(PNPGenBridgeAbstractclass):
@@ -38,7 +39,7 @@ class GenBridge(PNPGenBridgeAbstractclass):
         plan = self.new_plan()
 
         for action in msg.plan:
-            parameters = {str(p.key):str(p.value) for p in action.parameters}
+            parameters = OrderedDict((str(p.key),str(p.value)) for p in action.parameters)
             name = str(action.name)+"@"+str(action.action_id)
             plan.actions.extend(
                 self.new_rosplan_action(
