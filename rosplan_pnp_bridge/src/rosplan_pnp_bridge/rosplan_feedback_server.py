@@ -37,6 +37,13 @@ class ROSPlanFeedbackServer(PNPPlanningAbstractclass):
             ActionFeedback,
             queue_size=1
         )
+        self.state_pub = rospy.Publisher(
+            "~current_state",
+            String,
+            queue_size=1,
+            latch=True
+        )
+        self.state_pub.publish("")
         self.commands_pub = rospy.Publisher(
             "/kcl_rosplan/planning_commands",
             String,
@@ -72,8 +79,10 @@ class ROSPlanFeedbackServer(PNPPlanningAbstractclass):
 
     def goal_state_reached(self):
         print "#### GOAL"
+        self.state_pub.publish("goal")
 
     def fail_state_reached(self):
         print "#### FAIL"
         self.commands_pub.publish("cancel")
         self.client.send_goal(PlanGoal())
+        self.state_pub.publish("fail")
