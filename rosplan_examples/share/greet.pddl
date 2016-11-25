@@ -8,11 +8,14 @@
         id
         interactant_id
         battery_level
+        place
 )
 
 (:predicates
         (human_exists ?h - id)
         (robot_distance ?h - id ?d - distance)
+        (robot_at_home)
+        (robot_pose_unknown)
         (say_distance ?d - distance)
         (said ?h - id ?t - text)
         (found_interactant ?i - interactant_id ?h - id)
@@ -76,13 +79,15 @@
         :parameters (?i - interactant_id ?h - id ?t - text)
         :duration ( = ?duration 0)
         :condition (and
+                (at start (robot_at_home))
                 (at start (no_tracking))
                 (at start (found_interactant ?i ?h)))
         :effect (and
                 (at end (not (found_interactant ?i ?h)))
                 (at end (free_interactant_id ?i))
                 (at end (not (engaged ?i ?t)))
-                (at end (not (human_exists ?h))))
+                (at end (not (human_exists ?h)))
+                (at end (not (said ?h ?t))))
 )
 
 (:durative-action check_human_existance
@@ -101,7 +106,20 @@
                 (at start (robot_distance ?h ?f)))
         :effect (and
                 (at end (robot_distance ?h ?t))
-                (at start (not (robot_distance ?h ?f))))
+                (at start (not (robot_distance ?h ?f)))
+                (at end (not (robot_at_home)))
+                (at end (robot_pose_unknown)))
+)
+
+(:durative-action go_home
+        :parameters ()
+        :duration ( = ?duration 0)
+        :condition (and
+                (at start (no_tracking))
+                (at start (robot_pose_unknown)))
+        :effect (and
+                (at end (robot_at_home))
+                (at end (not (robot_pose_unknown))))
 )
   
 (:durative-action say
