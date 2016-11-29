@@ -8,13 +8,15 @@
         id
         interactant_id
         battery_level
-        place
+        waypoint
+        shop_id
 )
 
 (:predicates
         (human_exists ?h - id)
         (robot_distance ?h - id ?d - distance)
         (robot_at_home)
+        (robot_at_waypoint ?w - waypoint)
         (robot_pose_unknown)
         (say_distance ?d - distance)
         (said ?h - id ?t - text)
@@ -30,6 +32,39 @@
         (battery ?b - battery_level)
         (tracking ?h - id)
         (no_tracking)
+        (described_route ?s - shop_id ?w - waypoint)
+        (finished_description ?s - shop_id ?w - waypoint)
+)
+
+(:durative-action finish_description
+        :parameters (?s - shop_id ?w - waypoint)
+        :duration ( = ?duration 0)
+        :condition (and
+                (at start (described_route ?s ?w)))
+        :effect (and
+                (at end (not (described_route ?s ?w)))
+                (at end (finished_description ?s ?w)))
+)
+
+(:durative-action describe_route
+        :parameters (?s - shop_id ?w - waypoint)
+        :duration ( = ?duration 0)
+        :condition (and
+                (at start (robot_at_waypoint ?w)))
+        :effect (and
+                (at end (described_route ?s ?w))
+                (at end (not (finished_description ?s ?w))))
+)
+
+(:durative-action move_to_waypoint
+        :parameters (?t - waypoint ?f - waypoint)
+        :duration ( = ?duration 0)
+        :condition (and
+                (at start (robot_at_waypoint ?f)))
+        :effect (and
+                (at end (robot_at_waypoint ?t))
+                (at end (not (robot_at_waypoint ?f)))
+                (at end (robot_pose_unknown)))
 )
 
 (:durative-action find_interactant
