@@ -41,7 +41,7 @@ class ROSPlanFeedbackServer(PNPPlanningAbstractclass):
             "~current_state",
             String,
             queue_size=1,
-            latch=True
+            latch=False
         )
         self.state_pub.publish("")
         self.commands_pub = rospy.Publisher(

@@ -115,8 +115,7 @@
         :duration ( = ?duration 0)
         :condition (and
                 (at start (robot_at_home))
-                (at start (no_tracking))
-                (at start (found_interactant ?i ?h)))
+                (at start (no_tracking)))
         :effect (and
                 (at end (not (found_interactant ?i ?h)))
                 (at end (free_interactant_id ?i))
