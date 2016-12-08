@@ -104,7 +104,6 @@
         :duration ( = ?duration 0)
         :condition (and
                 (at start (found_interactant ?i ?h))
-                (at start (tracking ?h))
                 (at start (said ?h ?t)))
         :effect (and
                 (at end (engaged ?i ?t)))
@@ -114,8 +113,7 @@
         :parameters (?i - interactant_id ?h - id ?t - text)
         :duration ( = ?duration 0)
         :condition (and
-                (at start (robot_at_home))
-                (at start (no_tracking)))
+                (at start (robot_at_home)))
         :effect (and
                 (at end (not (found_interactant ?i ?h)))
                 (at end (free_interactant_id ?i))
@@ -125,7 +123,7 @@
 )
 
 (:durative-action check_human_existance
-        :parameters (?h - id)
+        :parameters (?h - id ?i - interactant_id)
         :duration ( = ?duration 0)
         :effect (and
                 (at end (human_exists ?h)))
@@ -135,7 +133,6 @@
         :parameters (?h - id ?t - distance ?f - distance)
 	:duration ( = ?duration 0)
         :condition (and
-                (at start (no_tracking))
                 (at start (human_exists ?h))
                 (at start (robot_distance ?h ?f)))
         :effect (and
@@ -149,7 +146,6 @@
         :parameters ()
         :duration ( = ?duration 0)
         :condition (and
-                (at start (no_tracking))
                 (at start (robot_pose_unknown)))
         :effect (and
                 (at end (robot_at_home))
@@ -158,11 +154,10 @@
   
 (:durative-action say
         :parameters (?h - id ?t - text ?d - distance)
-        :duration ( = ?duration 5)
+        :duration ( = ?duration 0)
         :condition (and
                 (at start (human_exists ?h))
-                (at start (tracking ?h))
-                (over all (robot_distance ?h ?d))
+                (at start (robot_distance ?h ?d))
                 (at start (say_distance ?d))) 
 	:effect (and
                 (at end (said ?h ?t)))
