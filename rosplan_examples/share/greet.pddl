@@ -34,6 +34,7 @@
         (no_tracking)
         (described_route ?s - shop_id ?w - waypoint)
         (finished_description ?s - shop_id ?w - waypoint)
+        (wants_to_interact ?h - id)
 )
 
 (:durative-action finish_description
@@ -72,7 +73,7 @@
         :duration ( = ?duration 0)
         :condition (and
                 (at start (free_interactant_id ?i))
-                (at start (looking_at_robot ?h)))
+                (at start (wants_to_interact ?h)))
         :effect (and
                 (at end (found_interactant ?i ?h))
                 (at end (not (free_interactant_id ?i))))
