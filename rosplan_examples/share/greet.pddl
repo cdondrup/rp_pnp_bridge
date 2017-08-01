@@ -35,6 +35,9 @@
         (described_route ?s - shop_id ?w - waypoint)
         (finished_description ?s - shop_id ?w - waypoint)
         (wants_to_interact ?h - id)
+        (heard ?t - text)
+        (replied ?t - text)
+        (keyword ?t - text)
 )
 
 (:durative-action finish_description
@@ -110,10 +113,23 @@
                 (at end (engaged ?i ?t)))
 )
 
+(:durative-action engaged_by_human
+        :parameters (?i - interactant_id ?t - text ?k - text)
+        :duration ( = ?duration 0)
+        :condition (and
+                (at start (heard ?k))
+                (at start (keyword ?k))
+                (at start (replied ?t)))
+        :effect (and
+                (at end (engaged ?i ?t))
+                (at end (not (free_interactant_id ?i))))
+)
+
 (:durative-action terminate_interaction
         :parameters (?i - interactant_id ?h - id ?t - text)
         :duration ( = ?duration 0)
         :condition (and
+                (at start (found_interactant ?i ?h))
                 (at start (robot_at_home)))
         :effect (and
                 (at end (not (found_interactant ?i ?h)))
@@ -121,6 +137,21 @@
                 (at end (not (engaged ?i ?t)))
                 (at end (not (human_exists ?h)))
                 (at end (not (said ?h ?t))))
+)
+
+(:durative-action terminate_interaction_by_user
+        :parameters (?i - interactant_id ?t - text ?k - text)
+        :duration ( = ?duration 0)
+        :condition (and
+                (at start (heard ?k))
+                (at start (keyword ?k))
+                (at start (replied ?t))
+                (at start (robot_at_home)))
+        :effect (and
+                (at end (free_interactant_id ?i))
+                (at end (not (engaged ?i ?t)))
+                (at end (not (heard ?k)))
+                (at end (not (replied ?t))))
 )
 
 (:durative-action check_human_existance
@@ -162,5 +193,15 @@
                 (at start (say_distance ?d))) 
 	:effect (and
                 (at end (said ?h ?t)))
+)
+
+(:durative-action respond
+        :parameters (?t - text ?k - text)
+        :duration ( = ?duration 0)
+        :condition (and
+                (at start (heard ?k))
+                (at start (keyword ?k))) 
+        :effect (and
+                (at end (replied ?t)))
 )
 )
