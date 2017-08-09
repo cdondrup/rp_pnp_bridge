@@ -21,8 +21,10 @@
         (say_distance ?d - distance)
         (said ?h - id ?t - text)
         (found_interactant ?i - interactant_id ?h - id)
+        (found_promotion ?i - interactant_id ?h - id)
         (engaged ?i - interactant_id ?t - text)
         (free_interactant_id ?i - interactant_id)
+        (free_promotion_id ?i - interactant_id)
         (face_detected ?h - id)
         (is_waving ?h - id)
         (looking_at_robot ?h - id)
@@ -38,6 +40,7 @@
         (heard ?t - text)
         (replied ?t - text)
         (keyword ?t - text)
+        (promoted_product ?s - shop_id)
 )
 
 (:durative-action finish_description
@@ -80,6 +83,17 @@
         :effect (and
                 (at end (found_interactant ?i ?h))
                 (at end (not (free_interactant_id ?i))))
+)
+
+(:durative-action find_promotion_target
+        :parameters (?i - interactant_id ?h - id)
+        :duration ( = ?duration 0)
+        :condition (and
+                (at start (free_promotion_id ?i))
+                (at start (wants_to_interact ?h)))
+        :effect (and
+                (at end (found_promotion ?i ?h))
+                (at end (not (free_promotion_id ?i))))
 )
 
 (:durative-action start_tracking_person
@@ -203,5 +217,16 @@
                 (at start (keyword ?k))) 
         :effect (and
                 (at end (replied ?t)))
+)
+
+(:durative-action promote_product
+        :parameters (?s - shop_id ?i - interactant_id ?h - id)
+        :duration ( = ?duration 0)
+        :condition (and
+                (at start (found_promotion ?i ?h)))
+        :effect (and
+                (at end (promoted_product ?s))
+                (at end (free_promotion_id ?i))
+                (at end (not(found_promotion ?i ?h))))
 )
 )
