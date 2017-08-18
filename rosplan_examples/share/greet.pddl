@@ -30,7 +30,10 @@
         (looking_at_robot ?h - id)
         (hatch_closed)
         (hatch_open)
-        (charging)
+        (charging ?i - interactant_id)
+        (not_charging ?i - interactant_id)
+        (charging_waypoint ?w - waypoint)
+        (charged)
         (battery ?b - battery_level)
         (tracking ?h - id)
         (no_tracking)
@@ -41,6 +44,29 @@
         (replied ?t - text)
         (keyword ?t - text)
         (promoted_product ?s - shop_id)
+)
+
+(:durative-action charge_robot
+        :parameters (?i - interactant_id ?w - waypoint)
+        :duration ( = ?duration 0)
+        :condition (and
+                (at start (robot_at_waypoint ?w))
+                (at start (charging_waypoint ?w))
+                (at start (free_interactant_id ?i)))
+        :effect (and
+                (at end (charging ?i))
+                (at end (not(not_charging ?i))))
+)
+
+(:durative-action undock_robot
+        :parameters (?i - interactant_id)
+        :duration ( = ?duration 0)
+        :condition (and
+                (at start (charging ?i))
+                (at start (charged)))
+        :effect (and
+                (at end (not_charging ?i))
+                (at end (not(charging ?i))))
 )
 
 (:durative-action finish_description
