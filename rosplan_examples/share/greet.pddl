@@ -10,6 +10,7 @@
         battery_level
         waypoint
         shop_id
+        product_id
 )
 
 (:predicates
@@ -33,7 +34,7 @@
         (charging ?i - interactant_id)
         (not_charging ?i - interactant_id)
         (charging_waypoint ?w - waypoint)
-        (charged)
+        (charged_level ?b - battery_level)
         (battery ?b - battery_level)
         (tracking ?h - id)
         (no_tracking)
@@ -43,7 +44,7 @@
         (heard ?t - text)
         (replied ?t - text)
         (keyword ?t - text)
-        (promoted_product ?s - shop_id)
+        (promoted_product ?p - product_id)
 )
 
 (:durative-action charge_robot
@@ -59,11 +60,12 @@
 )
 
 (:durative-action undock_robot
-        :parameters (?i - interactant_id)
+        :parameters (?i - interactant_id ?b - battery_level)
         :duration ( = ?duration 0)
         :condition (and
                 (at start (charging ?i))
-                (at start (charged)))
+                (at start (battery ?b))
+                (at start (charged_level ?b)))
         :effect (and
                 (at end (not_charging ?i))
                 (at end (not(charging ?i))))
@@ -143,15 +145,16 @@
                 (at end (no_tracking)))
 )
 
-(:durative-action engage_human
-        :parameters (?i - interactant_id ?h - id ?t - text)
-        :duration ( = ?duration 0)
-        :condition (and
-                (at start (found_interactant ?i ?h))
-                (at start (said ?h ?t)))
-        :effect (and
-                (at end (engaged ?i ?t)))
-)
+; Removed so pepper will not approach people
+;(:durative-action engage_human
+;        :parameters (?i - interactant_id ?h - id ?t - text)
+;        :duration ( = ?duration 0)
+;        :condition (and
+;                (at start (found_interactant ?i ?h))
+;                (at start (said ?h ?t)))
+;        :effect (and
+;                (at end (engaged ?i ?t)))
+;)
 
 (:durative-action engaged_by_human
         :parameters (?i - interactant_id ?t - text ?k - text)
@@ -246,12 +249,12 @@
 )
 
 (:durative-action promote_product
-        :parameters (?s - shop_id ?i - interactant_id ?h - id)
+        :parameters (?p - product_id ?i - interactant_id ?h - id)
         :duration ( = ?duration 0)
         :condition (and
                 (at start (found_promotion ?i ?h)))
         :effect (and
-                (at end (promoted_product ?s))
+                (at end (promoted_product ?p))
                 (at end (free_promotion_id ?i))
                 (at end (not(found_promotion ?i ?h))))
 )
