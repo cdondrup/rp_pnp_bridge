@@ -145,16 +145,15 @@
                 (at end (no_tracking)))
 )
 
-; Removed so pepper will not approach people
-;(:durative-action engage_human
-;        :parameters (?i - interactant_id ?h - id ?t - text)
-;        :duration ( = ?duration 0)
-;        :condition (and
-;                (at start (found_interactant ?i ?h))
-;                (at start (said ?h ?t)))
-;        :effect (and
-;                (at end (engaged ?i ?t)))
-;)
+(:durative-action engage_human
+        :parameters (?i - interactant_id ?h - id ?t - text)
+        :duration ( = ?duration 0)
+        :condition (and
+                (at start (found_interactant ?i ?h))
+                (at start (said ?h ?t)))
+        :effect (and
+                (at end (engaged ?i ?t)))
+)
 
 (:durative-action engaged_by_human
         :parameters (?i - interactant_id ?t - text ?k - text)
